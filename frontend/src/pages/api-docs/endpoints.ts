@@ -844,13 +844,13 @@ export const sections: readonly Section[] = [
         method: 'POST',
         path: '/panel/api/clients/add',
         summary:
-          'Create a new client and attach it to one or more inbounds in a single call. Body is JSON. Per-protocol secrets (UUID for VLESS/VMess, password for Trojan/Shadowsocks, auth for Hysteria) are generated server-side when omitted, so callers can send only the universal fields.',
+          "Create a new client and attach it to one or more inbounds in a single call. Body is JSON. Per-protocol credentials are created when omitted: UUID for VLESS/VMess, password for Trojan/Shadowsocks, auth for Hysteria, secret for MTProto, and a WireGuard keypair. When only a WireGuard private key is supplied, its public key is derived. WireGuard also allocates allowedIPs from the target inbound's peer subnet when omitted; allocation can fail if no address remains.",
         params: [
           {
             name: 'client',
             in: 'body (json)',
             type: 'object',
-            desc: 'Client fields: email, subId, id (uuid), password, auth, flow, totalGB, expiryTime, limitIp, limitHwid, tgId (numeric Telegram user ID, 0 = none), comment, enable.',
+            desc: 'Client fields: email, subId, id (uuid), password, auth, flow, secret, adTag, privateKey, publicKey, allowedIPs, preSharedKey, keepAlive, totalGB, expiryTime, limitIp, limitHwid, tgId (numeric Telegram user ID, 0 = none), comment, enable.',
           },
           {
             name: 'inboundIds',
@@ -897,7 +897,8 @@ export const sections: readonly Section[] = [
       {
         method: 'POST',
         path: '/panel/api/clients/:email/attach',
-        summary: 'Attach an existing client to one or more additional inbounds. Body is JSON.',
+        summary:
+          'Attach an existing client to one or more additional inbounds. Body is JSON. For WireGuard, an existing allowedIPs value is rejected when another client on the target inbound already uses it.',
         params: [
           { name: 'email', in: 'path', type: 'string', desc: 'Client email (unique identifier).' },
           {

@@ -27,11 +27,15 @@ _openapi:
         IDs it is attached to.
       url: '#fetch-one-client-by-email-including-the-inbound-ids-and-external-config-ids-it-is-attached-to'
     - depth: 2
-      title: Create a new client and attach it to one or more inbounds in a single
-        call. Body is JSON. Per-protocol secrets (UUID for VLESS/VMess, password
-        for Trojan/Shadowsocks, auth for Hysteria) are generated server-side
-        when omitted, so callers can send only the universal fields.
-      url: '#create-a-new-client-and-attach-it-to-one-or-more-inbounds-in-a-single-call-body-is-json-per-protocol-secrets-uuid-for-vlessvmess-password-for-trojanshadowsocks-auth-for-hysteria-are-generated-server-side-when-omitted-so-callers-can-send-only-the-universal-fields'
+      title: >-
+        Create a new client and attach it to one or more inbounds in a single
+        call. Body is JSON. Per-protocol credentials are created when omitted:
+        UUID for VLESS/VMess, password for Trojan/Shadowsocks, auth for
+        Hysteria, secret for MTProto, and a WireGuard keypair. When only a
+        WireGuard private key is supplied, its public key is derived. WireGuard
+        also allocates allowedIPs from the target inbound's peer subnet when
+        omitted; allocation can fail if no address remains.
+      url: '#create-a-new-client-and-attach-it-to-one-or-more-inbounds-in-a-single-call-body-is-json-per-protocol-credentials-are-created-when-omitted-uuid-for-vlessvmess-password-for-trojanshadowsocks-auth-for-hysteria-secret-for-mtproto-and-a-wireguard-keypair-when-only-a-wireguard-private-key-is-supplied-its-public-key-is-derived-wireguard-also-allocates-allowedips-from-the-target-inbounds-peer-subnet-when-omitted-allocation-can-fail-if-no-address-remains'
     - depth: 2
       title: Update an existing client by email. Changes propagate to every attached
         inbound. Body is the JSON client payload — supply the full set of fields
@@ -42,9 +46,11 @@ _openapi:
         drops its traffic record unless keepTraffic=1 is passed.
       url: '#delete-a-client-by-email-removes-it-from-every-attached-inbound-and-drops-its-traffic-record-unless-keeptraffic1-is-passed'
     - depth: 2
-      title: Attach an existing client to one or more additional inbounds. Body is
-        JSON.
-      url: '#attach-an-existing-client-to-one-or-more-additional-inbounds-body-is-json'
+      title: >-
+        Attach an existing client to one or more additional inbounds. Body is
+        JSON. For WireGuard, an existing allowedIPs value is rejected when
+        another client on the target inbound already uses it.
+      url: '#attach-an-existing-client-to-one-or-more-additional-inbounds-body-is-json-for-wireguard-an-existing-allowedips-value-is-rejected-when-another-client-on-the-target-inbound-already-uses-it'
     - depth: 2
       title: Detach a client from one or more inbounds without deleting the client.
       url: '#detach-a-client-from-one-or-more-inbounds-without-deleting-the-client'
@@ -277,12 +283,15 @@ _openapi:
       - content: Fetch one client by email, including the inbound IDs and external
           config IDs it is attached to.
         id: fetch-one-client-by-email-including-the-inbound-ids-and-external-config-ids-it-is-attached-to
-      - content: Create a new client and attach it to one or more inbounds in a single
-          call. Body is JSON. Per-protocol secrets (UUID for VLESS/VMess,
-          password for Trojan/Shadowsocks, auth for Hysteria) are generated
-          server-side when omitted, so callers can send only the universal
-          fields.
-        id: create-a-new-client-and-attach-it-to-one-or-more-inbounds-in-a-single-call-body-is-json-per-protocol-secrets-uuid-for-vlessvmess-password-for-trojanshadowsocks-auth-for-hysteria-are-generated-server-side-when-omitted-so-callers-can-send-only-the-universal-fields
+      - content: >-
+          Create a new client and attach it to one or more inbounds in a single
+          call. Body is JSON. Per-protocol credentials are created when omitted:
+          UUID for VLESS/VMess, password for Trojan/Shadowsocks, auth for
+          Hysteria, secret for MTProto, and a WireGuard keypair. When only a
+          WireGuard private key is supplied, its public key is derived. WireGuard
+          also allocates allowedIPs from the target inbound's peer subnet when
+          omitted; allocation can fail if no address remains.
+        id: create-a-new-client-and-attach-it-to-one-or-more-inbounds-in-a-single-call-body-is-json-per-protocol-credentials-are-created-when-omitted-uuid-for-vlessvmess-password-for-trojanshadowsocks-auth-for-hysteria-secret-for-mtproto-and-a-wireguard-keypair-when-only-a-wireguard-private-key-is-supplied-its-public-key-is-derived-wireguard-also-allocates-allowedips-from-the-target-inbounds-peer-subnet-when-omitted-allocation-can-fail-if-no-address-remains
       - content: Update an existing client by email. Changes propagate to every attached
           inbound. Body is the JSON client payload — supply the full set of
           fields you want to keep (the server replaces the row, it does not
@@ -291,9 +300,11 @@ _openapi:
       - content: Delete a client by email. Removes it from every attached inbound and
           drops its traffic record unless keepTraffic=1 is passed.
         id: delete-a-client-by-email-removes-it-from-every-attached-inbound-and-drops-its-traffic-record-unless-keeptraffic1-is-passed
-      - content: Attach an existing client to one or more additional inbounds. Body is
-          JSON.
-        id: attach-an-existing-client-to-one-or-more-additional-inbounds-body-is-json
+      - content: >-
+          Attach an existing client to one or more additional inbounds. Body is
+          JSON. For WireGuard, an existing allowedIPs value is rejected when
+          another client on the target inbound already uses it.
+        id: attach-an-existing-client-to-one-or-more-additional-inbounds-body-is-json-for-wireguard-an-existing-allowedips-value-is-rejected-when-another-client-on-the-target-inbound-already-uses-it
       - content: Detach a client from one or more inbounds without deleting the client.
         id: detach-a-client-from-one-or-more-inbounds-without-deleting-the-client
       - content: Replace a client's external links (per-client share links and remote

@@ -6245,7 +6245,7 @@
         "tags": [
           "Clients"
         ],
-        "summary": "Create a new client and attach it to one or more inbounds in a single call. Body is JSON. Per-protocol secrets (UUID for VLESS/VMess, password for Trojan/Shadowsocks, auth for Hysteria) are generated server-side when omitted, so callers can send only the universal fields.",
+        "summary": "Create a new client and attach it to one or more inbounds in a single call. Body is JSON. Per-protocol credentials are created when omitted: UUID for VLESS/VMess, password for Trojan/Shadowsocks, auth for Hysteria, secret for MTProto, and a WireGuard keypair. When only a WireGuard private key is supplied, its public key is derived. WireGuard also allocates allowedIPs from the target inbound's peer subnet when omitted; allocation can fail if no address remains.",
         "operationId": "post_panel_api_clients_add",
         "requestBody": {
           "required": true,
@@ -6421,7 +6421,7 @@
         "tags": [
           "Clients"
         ],
-        "summary": "Attach an existing client to one or more additional inbounds. Body is JSON.",
+        "summary": "Attach an existing client to one or more additional inbounds. Body is JSON. For WireGuard, an existing allowedIPs value is rejected when another client on the target inbound already uses it.",
         "operationId": "post_panel_api_clients_email_attach",
         "parameters": [
           {

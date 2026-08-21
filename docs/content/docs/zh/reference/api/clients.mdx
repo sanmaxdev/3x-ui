@@ -30,11 +30,12 @@ _openapi:
         #fetch-one-client-by-email-including-the-inbound-ids-and-external-config-ids-it-is-attached-to
     - depth: 2
       title: >-
-        在一次调用中创建一个新客户端并将其挂载到一个或多个入站。请求体为 JSON。各协议的密钥
-        （VLESS/VMess 的 UUID、Trojan/Shadowsocks 的 password、Hysteria 的 auth）在
-        省略时由服务端生成，因此调用方只需发送通用字段。
+        在一次调用中创建一个新客户端并将其挂载到一个或多个入站。请求体为 JSON。省略时会生成
+        各协议凭据：VLESS/VMess 的 UUID、Trojan/Shadowsocks 的 password、Hysteria 的
+        auth、MTProto 的 secret 和 WireGuard 密钥对。仅提供 WireGuard 私钥时会派生公钥。
+        省略 allowedIPs 时，会从目标入站的对等子网分配地址；若没有剩余地址，分配可能失败。
       url: >-
-        #create-a-new-client-and-attach-it-to-one-or-more-inbounds-in-a-single-call-body-is-json-per-protocol-secrets-uuid-for-vlessvmess-password-for-trojanshadowsocks-auth-for-hysteria-are-generated-server-side-when-omitted-so-callers-can-send-only-the-universal-fields
+        #create-a-new-client-and-attach-it-to-one-or-more-inbounds-in-a-single-call-body-is-json-per-protocol-credentials-are-created-when-omitted-uuid-for-vlessvmess-password-for-trojanshadowsocks-auth-for-hysteria-secret-for-mtproto-and-a-wireguard-keypair-when-only-a-wireguard-private-key-is-supplied-its-public-key-is-derived-wireguard-also-allocates-allowedips-from-the-target-inbounds-peer-subnet-when-omitted-allocation-can-fail-if-no-address-remains
     - depth: 2
       title: >-
         按 email 更新现有客户端。变更会传播到每个挂载的入站。请求体为 JSON 客户端载荷——
@@ -49,9 +50,10 @@ _openapi:
         #delete-a-client-by-email-removes-it-from-every-attached-inbound-and-drops-its-traffic-record-unless-keeptraffic1-is-passed
     - depth: 2
       title: >-
-        将现有客户端挂载到一个或多个额外的入站。请求体为 JSON。
+        将现有客户端挂载到一个或多个额外的入站。请求体为 JSON。对于 WireGuard，如果目标
+        入站中的另一个客户端已使用现有 allowedIPs 值，则挂载会被拒绝。
       url: >-
-        #attach-an-existing-client-to-one-or-more-additional-inbounds-body-is-json
+        #attach-an-existing-client-to-one-or-more-additional-inbounds-body-is-json-for-wireguard-an-existing-allowedips-value-is-rejected-when-another-client-on-the-target-inbound-already-uses-it
     - depth: 2
       title: 在不删除客户端的前提下，将其从一个或多个入站上分离。
       url: '#detach-a-client-from-one-or-more-inbounds-without-deleting-the-client'
@@ -290,11 +292,12 @@ _openapi:
         id: >-
           fetch-one-client-by-email-including-the-inbound-ids-and-external-config-ids-it-is-attached-to
       - content: >-
-          在一次调用中创建一个新客户端并将其挂载到一个或多个入站。请求体为 JSON。各协议的密钥
-          （VLESS/VMess 的 UUID、Trojan/Shadowsocks 的 password、Hysteria 的 auth）在
-          省略时由服务端生成，因此调用方只需发送通用字段。
+          在一次调用中创建一个新客户端并将其挂载到一个或多个入站。请求体为 JSON。省略时会生成
+          各协议凭据：VLESS/VMess 的 UUID、Trojan/Shadowsocks 的 password、Hysteria 的
+          auth、MTProto 的 secret 和 WireGuard 密钥对。仅提供 WireGuard 私钥时会派生公钥。
+          省略 allowedIPs 时，会从目标入站的对等子网分配地址；若没有剩余地址，分配可能失败。
         id: >-
-          create-a-new-client-and-attach-it-to-one-or-more-inbounds-in-a-single-call-body-is-json-per-protocol-secrets-uuid-for-vlessvmess-password-for-trojanshadowsocks-auth-for-hysteria-are-generated-server-side-when-omitted-so-callers-can-send-only-the-universal-fields
+          create-a-new-client-and-attach-it-to-one-or-more-inbounds-in-a-single-call-body-is-json-per-protocol-credentials-are-created-when-omitted-uuid-for-vlessvmess-password-for-trojanshadowsocks-auth-for-hysteria-secret-for-mtproto-and-a-wireguard-keypair-when-only-a-wireguard-private-key-is-supplied-its-public-key-is-derived-wireguard-also-allocates-allowedips-from-the-target-inbounds-peer-subnet-when-omitted-allocation-can-fail-if-no-address-remains
       - content: >-
           按 email 更新现有客户端。变更会传播到每个挂载的入站。请求体为 JSON 客户端载荷——
           请提供你希望保留的完整字段集（服务端会替换整条记录，而非局部更新）。
@@ -306,9 +309,10 @@ _openapi:
         id: >-
           delete-a-client-by-email-removes-it-from-every-attached-inbound-and-drops-its-traffic-record-unless-keeptraffic1-is-passed
       - content: >-
-          将现有客户端挂载到一个或多个额外的入站。请求体为 JSON。
+          将现有客户端挂载到一个或多个额外的入站。请求体为 JSON。对于 WireGuard，如果目标
+          入站中的另一个客户端已使用现有 allowedIPs 值，则挂载会被拒绝。
         id: >-
-          attach-an-existing-client-to-one-or-more-additional-inbounds-body-is-json
+          attach-an-existing-client-to-one-or-more-additional-inbounds-body-is-json-for-wireguard-an-existing-allowedips-value-is-rejected-when-another-client-on-the-target-inbound-already-uses-it
       - content: 在不删除客户端的前提下，将其从一个或多个入站上分离。
         id: detach-a-client-from-one-or-more-inbounds-without-deleting-the-client
       - content: >-
